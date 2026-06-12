@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name 2026世界杯赛程(Egern强制圆角版)
-// @version 9.0
-// @description 卡片间距缩小一倍，强制注入所有底层圆角/裁剪属性触发圆角渲染。
+// @name 2026世界杯赛程(Egern满血显示版)
+// @version 12.0
+// @description 释放小组件底部空间，将最大赛事渲染数量提升至11场，充分利用屏幕显示区域。
 // ==/UserScript==
 
 // ---------------------------
 // 全局样式微调参数
 // ---------------------------
 // 倒圆角大小（推荐 10~15 之间，过大会变回直角）
-const CARD_CORNER_RADIUS = 16; 
+const CARD_CORNER_RADIUS = 12; 
 
 // ---------------------------
 // 汉化与国旗字典
@@ -49,9 +49,10 @@ const COL_WIDTH_SCORE = 75;
 // ---------------------------
 export default async function(ctx) {
   const now = new Date();
-  const fetchStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  const fetchEnd = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  const nowTs = now.getTime(); 
 
+  const fetchStart = new Date(nowTs - 24 * 60 * 60 * 1000);
+  const fetchEnd = new Date(nowTs + 3 * 24 * 60 * 60 * 1000);
   const getApiDateStr = (date) => {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -59,27 +60,25 @@ export default async function(ctx) {
     return `${yyyy}${mm}${dd}`;
   };
 
-  const getBjDateStr = (timestamp) => {
-    const bjTime = new Date(timestamp + 8 * 60 * 60 * 1000);
-    const yyyy = bjTime.getUTCFullYear();
-    const mm = String(bjTime.getUTCMonth() + 1).padStart(2, '0');
-    const dd = String(bjTime.getUTCDate()).padStart(2, '0');
+  const getBjDateStr = (ts) => {
+    const bjDate = new Date(ts + 8 * 60 * 60 * 1000); 
+    const yyyy = bjDate.getUTCFullYear();
+    const mm = String(bjDate.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(bjDate.getUTCDate()).padStart(2, '0');
     return `${yyyy}${mm}${dd}`;
   };
 
-  const bjNowTime = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
-  const todayStr = getBjDateStr(bjNowTime);
-  const tomorrowStr = getBjDateStr(bjNowTime + 24 * 60 * 60 * 1000);
-  const dayAfterStr = getBjDateStr(bjNowTime + 48 * 60 * 60 * 1000);
+  const todayStr = getBjDateStr(nowTs);
+  const tomorrowStr = getBjDateStr(nowTs + 24 * 60 * 60 * 1000);
+  const dayAfterStr = getBjDateStr(nowTs + 48 * 60 * 60 * 1000);
 
   const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
   const weekLabels = {
-    "今日": weekdays[new Date(bjNowTime + 8 * 60 * 60 * 1000).getUTCDay()],
-    "明日": weekdays[new Date(bjNowTime + (8 + 24) * 60 * 60 * 1000).getUTCDay()],
-    "后日": weekdays[new Date(bjNowTime + (8 + 48) * 60 * 60 * 1000).getUTCDay()]
+    "今日": weekdays[new Date(nowTs + 8 * 60 * 60 * 1000).getUTCDay()],
+    "明日": weekdays[new Date(nowTs + 8 * 60 * 60 * 1000 + 24 * 60 * 60 * 1000).getUTCDay()],
+    "后日": weekdays[new Date(nowTs + 8 * 60 * 60 * 1000 + 48 * 60 * 60 * 1000).getUTCDay()]
   };
 
-  // 网络请求
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${getApiDateStr(fetchStart)}-${getApiDateStr(fetchEnd)}`;
   let matches = [];
   let fetchSuccess = false;
@@ -104,16 +103,14 @@ export default async function(ctx) {
     widgetChildren.push({ type: "spacer" });
     widgetChildren.push({ type: "text", text: "⚠️ 数据拉取失败，请检查网络。", textColor: "#FF3B30", font: { size: 14 } });
     widgetChildren.push({ type: "spacer" });
-    return { type: "widget", backgroundColor: "#161618", padding: 15, children: widgetChildren };
+    return { type: "widget", backgroundColor: "#161618", padding: 12, children: widgetChildren };
   }
 
-  // 分配赛程数据
   const groupedMatches = { "今日": [], "明日": [], "后日": [] };
   matches.forEach(match => {
-    const matchDate = new Date(match.date); 
-    const matchTimestamp = matchDate.getTime();
+    const matchTimestamp = new Date(match.date).getTime(); 
     const bjMatchTime = new Date(matchTimestamp + 8 * 60 * 60 * 1000);
-    const matchDateStr = getBjDateStr(matchTimestamp - matchDate.getTimezoneOffset() * 60 * 1000);
+    const matchDateStr = getBjDateStr(matchTimestamp); 
     
     const homeCompetitor = match.competitions[0].competitors.find(c => c.homeAway === 'home');
     const awayCompetitor = match.competitions[0].competitors.find(c => c.homeAway === 'away');
@@ -135,7 +132,9 @@ export default async function(ctx) {
   });
 
   const dayNames = ["今日", "明日", "后日"];
-  const MAX_MATCHES_TO_SHOW = 10; 
+  
+  // 【关键修改】将最大显示场次提升至 11 场，以充分利用底部空间
+  const MAX_MATCHES_TO_SHOW = 11; 
   let totalRenderedMatches = 0;
 
   for (let dIndex = 0; dIndex < dayNames.length; dIndex++) {
@@ -163,7 +162,7 @@ export default async function(ctx) {
     }
 
     cardChildren.push({ type: "stack", direction: "row", alignItems: "center", children: headerRowChildren });
-    cardChildren.push({ type: "spacer", length: 10 });
+    cardChildren.push({ type: "spacer", length: 6 }); // 标题与赛事的间距
 
     // --- 赛事列表渲染 ---
     if (dayMatches.length === 0 && day === "今日") {
@@ -195,18 +194,15 @@ export default async function(ctx) {
         direction: "row",
         alignItems: "center",
         children: [
-          // 1. 时间列
           {
             type: "stack", direction: "row", width: COL_WIDTH_TIME,
             children: [ { type: "text", text: m.time, font: { size: 13 }, textColor: "#A1A1A6" }, { type: "spacer" } ]
           },
           { type: "spacer" },
-          // 2. 主队名列
           {
             type: "stack", direction: "row", width: COL_WIDTH_TEAM,
             children: [ { type: "spacer" }, { type: "text", text: homeName, font: { size: 13 }, textColor: "#FFFFFF" } ]
           },
-          // 3. 比分列
           {
             type: "stack", direction: "row", width: COL_WIDTH_SCORE,
             children: [
@@ -215,7 +211,6 @@ export default async function(ctx) {
               { type: "spacer" }
             ]
           },
-          // 4. 客队名列
           {
             type: "stack", direction: "row", width: COL_WIDTH_TEAM,
             children: [ { type: "text", text: awayName, font: { size: 13 }, textColor: "#FFFFFF" }, { type: "spacer" } ]
@@ -224,7 +219,7 @@ export default async function(ctx) {
         ]
       });
 
-      cardChildren.push({ type: "spacer", length: 6 });
+      cardChildren.push({ type: "spacer", length: 4 }); // 单场比赛间距
       totalRenderedMatches++;
     }
     
@@ -232,7 +227,6 @@ export default async function(ctx) {
       cardChildren.push({ type: "text", text: "...", font: { size: 12 }, textColor: "#888888" });
     }
 
-    // 【暴力圆角修复】在对象中注入所有可能的 iOS 底层裁剪属性
     widgetChildren.push({
       type: "stack",
       direction: "column",
@@ -242,25 +236,24 @@ export default async function(ctx) {
           type: "stack",
           direction: "column",
           backgroundColor: day === "今日" ? "#1A2520" : "#252528",
-          // 强制注入所有可能被 Egern 底层解析的圆角/裁剪字段，防止被单点遗漏吃掉
           cornerRadius: CARD_CORNER_RADIUS,
           borderRadius: CARD_CORNER_RADIUS,
           clip: true,
           clipToBounds: true,
           masksToBounds: true,
-          padding: 10, 
+          padding: 8,
           children: cardChildren
         }
       ]
     });
 
     if (dIndex < dayNames.length - 1) {
-      // 【间距修复】将原来 length: 8 的间距调小一倍为 4
-      widgetChildren.push({ type: "spacer", length: 4 });
+      widgetChildren.push({ type: "spacer", length: 6 }); // 卡片间距
     }
   }
 
+  // 底部弹性占位：将上方所有卡片顶到小组件最顶端
   widgetChildren.push({ type: "spacer" }); 
 
-  return { type: "widget", backgroundColor: "#161618", padding: 15, children: widgetChildren };
+  return { type: "widget", backgroundColor: "#161618", padding: 10, children: widgetChildren };
 }
