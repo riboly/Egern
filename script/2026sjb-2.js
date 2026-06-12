@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name 2026世界杯赛程(Egern满血显示版)
-// @version 12.0
-// @description 释放小组件底部空间，将最大赛事渲染数量提升至11场，充分利用屏幕显示区域。
+// @version 13.0
+// @description 扩充百余个国家队汉化与国旗字典库，彻底解决偏门球队未识别问题。保留所有排版与完美圆角设计。
 // ==/UserScript==
 
 // ---------------------------
@@ -11,23 +11,46 @@
 const CARD_CORNER_RADIUS = 12; 
 
 // ---------------------------
-// 汉化与国旗字典
+// 终极汉化与国旗字典库 (覆盖六大洲百余支国家队)
 // ---------------------------
 const teamNamesCN = {
-  "Canada": "🇨🇦 加拿大", "Bosnia-Herzegovina": "🇧🇦 波黑", "Bosnia and Herzegovina": "🇧🇦 波黑",
-  "United States": "🇺🇸 美国", "USA": "🇺🇸 美国", "Paraguay": "🇵🇾 巴拉圭",
-  "Qatar": "🇶🇦 卡塔尔", "Switzerland": "🇨🇭 瑞士", "Brazil": "🇧🇷 巴西",
-  "Morocco": "🇲🇦 摩洛哥", "Haiti": "🇭🇹 海地", "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿 苏格兰",
-  "Australia": "🇦🇺 澳大利亚", "Türkiye": "🇹🇷 土耳其", "Turkey": "🇹🇷 土耳其",
-  "Argentina": "🇦🇷 阿根廷", "France": "🇫🇷 法国", "Germany": "🇩🇪 德国", 
-  "Spain": "🇪🇸 西班牙", "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 英格兰", "Portugal": "🇵🇹 葡萄牙", 
-  "Netherlands": "🇳🇱 荷兰", "Italy": "🇮🇹 意大利", "Mexico": "🇲🇽 墨西哥", 
-  "Japan": "🇯🇵 日本", "South Korea": "🇰🇷 韩国", "Saudi Arabia": "🇸🇦 沙特", 
-  "Iran": "🇮🇷 伊朗", "Uruguay": "🇺🇾 乌拉圭", "Colombia": "🇨🇴 哥伦比亚", 
-  "Ecuador": "🇪🇨 厄瓜多尔", "Senegal": "🇸🇳 塞内加尔", "Croatia": "🇭🇷 克罗地亚", 
-  "Belgium": "🇧🇪 比利时", "Denmark": "🇩🇰 丹麦", "South Africa": "🇿🇦 南非", 
-  "Czechia": "🇨🇿 捷克", "Tunisia": "🇹🇳 突尼斯", "Egypt": "🇪🇬 埃及", 
-  "New Zealand": "🇳🇿 新西兰", "Norway": "🇳🇴 挪威"
+  // 北美洲及加勒比海
+  "United States": "🇺🇸 美国", "USA": "🇺🇸 美国", "Canada": "🇨🇦 加拿大", "Mexico": "🇲🇽 墨西哥",
+  "Costa Rica": "🇨🇷 哥斯达黎加", "Panama": "🇵🇦 巴拿马", "Jamaica": "🇯🇲 牙买加", "Honduras": "🇭🇳 洪都拉斯",
+  "El Salvador": "🇸🇻 萨尔瓦多", "Haiti": "🇭🇹 海地", "Curaçao": "🇨🇼 库拉索", "Trinidad and Tobago": "🇹🇹 特立尼达和多巴哥",
+  "Guatemala": "🇬🇹 危地马拉", "Cuba": "🇨🇺 古巴",
+  // 南美洲
+  "Brazil": "🇧🇷 巴西", "Argentina": "🇦🇷 阿根廷", "Uruguay": "🇺🇾 乌拉圭", "Colombia": "🇨🇴 哥伦比亚",
+  "Peru": "🇵🇪 秘鲁", "Chile": "🇨🇱 智利", "Ecuador": "🇪🇨 厄瓜多尔", "Paraguay": "🇵🇾 巴拉圭",
+  "Venezuela": "🇻🇪 委内瑞拉", "Bolivia": "🇧🇴 玻利维亚",
+  // 欧洲
+  "France": "🇫🇷 法国", "Germany": "🇩🇪 德国", "Spain": "🇪🇸 西班牙", "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿 英格兰",
+  "Portugal": "🇵🇹 葡萄牙", "Netherlands": "🇳🇱 荷兰", "Italy": "🇮🇹 意大利", "Croatia": "🇭🇷 克罗地亚",
+  "Belgium": "🇧🇪 比利时", "Denmark": "🇩🇰 丹麦", "Switzerland": "🇨🇭 瑞士", "Sweden": "🇸🇪 瑞典",
+  "Wales": "🏴󠁧󠁢󠁷󠁬󠁳󠁿 威尔士", "Poland": "🇵🇱 波兰", "Serbia": "🇷🇸 塞尔维亚", "Scotland": "🏴󠁧󠁢󠁳󠁣󠁴󠁿 苏格兰",
+  "Ukraine": "🇺🇦 乌克兰", "Czechia": "🇨🇿 捷克", "Czech Republic": "🇨🇿 捷克", "Austria": "🇦🇹 奥地利",
+  "Hungary": "🇭🇺 匈牙利", "Türkiye": "🇹🇷 土耳其", "Turkey": "🇹🇷 土耳其", "Norway": "🇳🇴 挪威",
+  "Finland": "🇫🇮 芬兰", "Romania": "🇷🇴 罗马尼亚", "Slovakia": "🇸🇰 斯洛伐克", "Greece": "🇬🇷 希腊",
+  "Ireland": "🇮🇪 爱尔兰", "Republic of Ireland": "🇮🇪 爱尔兰", "Northern Ireland": "🇬🇧 北爱尔兰",
+  "Bosnia-Herzegovina": "🇧🇦 波黑", "Bosnia and Herzegovina": "🇧🇦 波黑", "Iceland": "🇮🇸 冰岛",
+  "Albania": "🇦🇱 阿尔巴尼亚", "Georgia": "🇬🇪 格鲁吉亚", "Slovenia": "🇸🇮 斯洛文尼亚",
+  "Bulgaria": "🇧🇬 保加利亚", "North Macedonia": "🇲🇰 北马其顿", "Montenegro": "🇲🇪 黑山",
+  // 非洲
+  "Senegal": "🇸🇳 塞内加尔", "Morocco": "🇲🇦 摩洛哥", "Cameroon": "🇨🇲 喀麦隆", "Ghana": "🇬🇭 加纳",
+  "Tunisia": "🇹🇳 突尼斯", "Egypt": "🇪🇬 埃及", "Algeria": "🇩🇿 阿尔及利亚", "Nigeria": "🇳🇬 尼日利亚",
+  "Mali": "🇲🇱 马里", "Ivory Coast": "🇨🇮 科特迪瓦", "Côte d'Ivoire": "🇨🇮 科特迪瓦",
+  "South Africa": "🇿🇦 南非", "Burkina Faso": "🇧🇫 布基纳法索", "Congo DR": "🇨🇩 刚果(金)",
+  "DR Congo": "🇨🇩 刚果(金)", "Guinea": "🇬🇳 几内亚", "Cabo Verde": "🇨🇻 佛得角", "Cape Verde": "🇨🇻 佛得角",
+  "Equatorial Guinea": "🇬🇶 赤道几内亚", "Zambia": "🇿🇲 赞比亚", "Angola": "🇦🇴 安哥拉",
+  // 亚洲
+  "Japan": "🇯🇵 日本", "South Korea": "🇰🇷 韩国", "Korea Republic": "🇰🇷 韩国", "Iran": "🇮🇷 伊朗",
+  "Saudi Arabia": "🇸🇦 沙特", "Australia": "🇦🇺 澳大利亚", "Qatar": "🇶🇦 卡塔尔", "United Arab Emirates": "🇦🇪 阿联酋",
+  "UAE": "🇦🇪 阿联酋", "Iraq": "🇮🇶 伊拉克", "Oman": "🇴🇲 阿曼", "China PR": "🇨🇳 中国", "China": "🇨🇳 中国",
+  "Syria": "🇸🇾 叙利亚", "Uzbekistan": "🇺🇿 乌兹别克斯坦", "Jordan": "🇯🇴 约旦", "Bahrain": "🇧🇭 巴林",
+  "Palestine": "🇵🇸 巴勒斯坦", "Indonesia": "🇮🇩 印尼", "Vietnam": "🇻🇳 越南", "Thailand": "🇹🇭 泰国",
+  "North Korea": "🇰🇵 朝鲜", "Korea DPR": "🇰🇵 朝鲜", "Lebanon": "🇱🇧 黎巴嫩", "Kuwait": "🇰🇼 科威特",
+  // 大洋洲
+  "New Zealand": "🇳🇿 新西兰", "Fiji": "🇫🇯 斐济", "Solomon Islands": "🇸🇧 所罗门群岛"
 };
 
 function translateTeam(englishName) {
@@ -132,8 +155,6 @@ export default async function(ctx) {
   });
 
   const dayNames = ["今日", "明日", "后日"];
-  
-  // 【关键修改】将最大显示场次提升至 11 场，以充分利用底部空间
   const MAX_MATCHES_TO_SHOW = 11; 
   let totalRenderedMatches = 0;
 
@@ -162,7 +183,7 @@ export default async function(ctx) {
     }
 
     cardChildren.push({ type: "stack", direction: "row", alignItems: "center", children: headerRowChildren });
-    cardChildren.push({ type: "spacer", length: 6 }); // 标题与赛事的间距
+    cardChildren.push({ type: "spacer", length: 6 });
 
     // --- 赛事列表渲染 ---
     if (dayMatches.length === 0 && day === "今日") {
@@ -219,7 +240,7 @@ export default async function(ctx) {
         ]
       });
 
-      cardChildren.push({ type: "spacer", length: 4 }); // 单场比赛间距
+      cardChildren.push({ type: "spacer", length: 4 }); 
       totalRenderedMatches++;
     }
     
@@ -248,11 +269,10 @@ export default async function(ctx) {
     });
 
     if (dIndex < dayNames.length - 1) {
-      widgetChildren.push({ type: "spacer", length: 6 }); // 卡片间距
+      widgetChildren.push({ type: "spacer", length: 6 }); 
     }
   }
 
-  // 底部弹性占位：将上方所有卡片顶到小组件最顶端
   widgetChildren.push({ type: "spacer" }); 
 
   return { type: "widget", backgroundColor: "#161618", padding: 10, children: widgetChildren };
